@@ -9,6 +9,8 @@ from constants import CONFIG_PATH
 from core.function.loadMods import loadMods
 from utils import read_json, write_json
 
+from threading import Thread, Event, Lock
+
 header = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.53"}
 MODS_LIST = {
     "mods": [],
@@ -71,6 +73,8 @@ def getFile(assetsHash, fileName):
     elif mode == "global":
         return export('https://ark-us-static-online.yo-star.com/assetbundle/official/Android/assets/{}/{}'.format(version, fileName), basePath, fileName, filePath, assetsHash, wrongSize)
 
+downloading_files={}
+downloading_files_lock=Lock()
 
 def downloadFile(url, filePath):
 
@@ -78,24 +82,18 @@ def downloadFile(url, filePath):
     file = requests.get(url, headers=header, stream=True)
 
     with open(filePath, 'wb') as f:
-        for chunk in file.iter_content(chunk_size=512):
+        for chunk in file.iter_content(chunk_size=4096):
             f.write(chunk)
-            yield chunk
+    downloading_files_lock.acquire()
+    downloading_files[filePath].set()
+    del downloading_files[filePath]
+    downloading_files_lock.release()
+
 
 
 def export(url, basePath, fileName, filePath, assetsHash, redownload = False):
 
     server_config = read_json(CONFIG_PATH)
-
-    headers = {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Content-Disposition": "attachment; filename=" + os.path.basename(filePath),
-        "Content-Type": "application/octet-stream",
-        "Expires": "0",
-        "Etag": hashlib.md5(filePath.encode('utf-8')).hexdigest(),
-        "Last-Modified": datetime.now(),
-        "Pragma": "no-cache"
-    }
 
     if os.path.basename(filePath) == 'hot_update_list.json':
         
@@ -133,15 +131,14 @@ def export(url, basePath, fileName, filePath, assetsHash, redownload = False):
 
         return send_file('../assets/cache/hot_update_list.json')
 
-    if os.path.exists(filePath) and not redownload:
-        return send_from_directory(os.path.join("..", basePath), fileName)
-
+    downloading_files_lock.acquire()
+    if filePath in downloading_files or not os.path.exists(filePath) or redownload:
+        if filePath not in downloading_files:
+            downloading_files[filePath]=Event()
+            Thread(target=downloadFile, args=(url, filePath)).start()
+        event=downloading_files[filePath]
+        downloading_files_lock.release()
+        event.wait()
     else:
-        file = requests.head(url, headers=header)
-        total_size_in_bytes = int(file.headers.get('Content-length', 0))
-        headers["Content-Length"] = total_size_in_bytes
-            
-    return Response(
-        stream_with_context(downloadFile(url, filePath)),
-        headers=headers
-    )
+        downloading_files_lock.release()
+    return send_from_directory(os.path.join("..", basePath), fileName)
