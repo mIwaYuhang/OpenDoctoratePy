@@ -27,7 +27,8 @@ try:
     network_config = requests.get(
         "https://ak-conf.hypergryph.com/config/prod/official/network_config"
     ).json()
-    funcVer = network_config["content"]["funcVer"]
+    content = json.loads(network_config["content"])
+    funcVer = content["funcVer"]
     if funcVer != old_funcVer:
         config["networkConfig"]["cn"]["content"]["funcVer"] = funcVer
         config["networkConfig"]["cn"]["content"]["configs"][funcVer] = config["networkConfig"]["cn"]["content"]["configs"][old_funcVer]
