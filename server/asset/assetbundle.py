@@ -84,10 +84,6 @@ def downloadFile(url, filePath):
     with open(filePath, 'wb') as f:
         for chunk in file.iter_content(chunk_size=4096):
             f.write(chunk)
-    downloading_files_lock.acquire()
-    downloading_files[filePath].set()
-    del downloading_files[filePath]
-    downloading_files_lock.release()
 
 
 
@@ -132,13 +128,22 @@ def export(url, basePath, fileName, filePath, assetsHash, redownload = False):
         return send_file('../assets/cache/hot_update_list.json')
 
     downloading_files_lock.acquire()
+    downloading_thread=None
     if filePath in downloading_files or not os.path.exists(filePath) or redownload:
         if filePath not in downloading_files:
             downloading_files[filePath]=Event()
-            Thread(target=downloadFile, args=(url, filePath)).start()
+            downloading_thread=Thread(target=downloadFile, args=(url, filePath))
+            downloading_thread.start()
         event=downloading_files[filePath]
         downloading_files_lock.release()
-        event.wait()
+        if downloading_thread is not None:
+            downloading_thread.join()
+            event.set()
+            downloading_files_lock.acquire()
+            del downloading_files[filePath]
+            downloading_files_lock.release()
+        else:
+            event.wait()
     else:
         downloading_files_lock.release()
     return send_from_directory(os.path.join("..", basePath), fileName)
