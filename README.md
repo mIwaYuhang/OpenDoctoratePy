@@ -4,9 +4,14 @@ It's a pity that DoctoratePy is no longer maintained. Therefore, this repo aims 
 
 Python server implementation of a certain anime tower defense game. This repo is for the CN TapTap Version.
 
+Discord: [https://discord.com/invite/SmuB88RR5W](https://discord.com/invite/SmuB88RR5W)
+
 ## How To
 
 ### LDPlayer9
+
+[https://ldcdn.ldmnq.com/download/package/LDPlayer9.0.exe](https://ldcdn.ldmnq.com/download/package/LDPlayer9.0.exe)
+
 1. Enable root permission and adb connection in LDPlayer9's settings.
 2. Start LDPlayer9.
 3. Run `setup_requirements.bat`, and success can be indicated from "Press any key to continue".
