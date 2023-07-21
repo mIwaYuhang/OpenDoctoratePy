@@ -20,7 +20,33 @@ def crisisGetCrisisInfo():
         rune["playerDataDelta"]["modified"]["crisis"]["lst"] = current_time
         rune["playerDataDelta"]["modified"]["crisis"]["nst"] = next_day
         rune["playerDataDelta"]["modified"]["crisis"]["training"]["nst"] = next_day
-   
+
+        for i in rune["playerDataDelta"]["modified"]["crisis"]["season"]:
+            rune["playerDataDelta"]["modified"]["crisis"]["season"][i]["temporary"] = {
+                "schedule": "rg1",
+                "nst": next_day,
+                "point": -1,
+                "challenge": {
+                    "taskList": {
+                        "dailyTask_1": {
+                            "fts": -1,
+                            "rts": -1
+                        }
+                    },
+                    "topPoint": -1,
+                    "pointList": {
+                        "0": -1,
+                        "1": -1,
+                        "2": -1,
+                        "3": -1,
+                        "4": -1,
+                        "5": -1,
+                        "6": -1,
+                        "7": -1,
+                        "8": -1
+                    }
+                }
+            }
     else:
         rune = {
             "ts": round(time()),
