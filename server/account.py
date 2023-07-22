@@ -15,11 +15,15 @@ from core.function.update import updateData
 import uuid
 
 def accountLogin():
+    try:
+        uid = uuid.UUID(request.headers.get("Uid"))
+    except Exception:
+        uid = uuid.uuid4()
 
     data = request.data
     data = {
         "result": 0,
-        "uid": str(uuid.uuid4()),
+        "uid": str(uid),
         "secret": "yostar",
         "serviceLicenseVersion": 0
     }
