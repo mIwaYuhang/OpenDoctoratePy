@@ -12,13 +12,14 @@ from constants import USER_JSON_PATH, CONFIG_PATH, BATTLE_REPLAY_JSON_PATH, \
                     HANDBOOK_INFO_TABLE_URL, MAILLIST_PATH, CHARM_TABLE_URL, ACTIVITY_TABLE_URL
 from utils import read_json, write_json
 from core.function.update import updateData
+import uuid
 
 def accountLogin():
 
     data = request.data
     data = {
         "result": 0,
-        "uid": "-1",
+        "uid": str(uuid.uuid4()),
         "secret": "yostar",
         "serviceLicenseVersion": 0
     }

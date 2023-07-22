@@ -6,6 +6,15 @@ from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
+from flask import request
+from threading import Thread, Lock, Event
+
+with open("config/multiUserConfig.json") as f:
+    multiUserConfig = json.load(f)
+multiUserEnabled = multiUserConfig["enabled"]
+
+users = {}
+users_lock = Lock()
 
 def writeLog(data):
 
@@ -14,16 +23,62 @@ def writeLog(data):
     print(f'{clientIp} - - [{time}] {data}')
 
 
-def read_json(filepath: str, **args) -> dict:
+def get_uid():
+    if multiUserEnabled:
+        try:
+            uid = request.headers.get("Uid")
+            return uid
+        except Exception:
+            pass
+    return None
 
+def release_uid(uid):
+    users_lock.acquire()
+    user = users[uid]
+    users_lock.release()
+    event = user["EVENT"]
+    while True:
+        flag = event.wait(60.0*60.0)
+        if flag:
+            event.clear()
+        else:
+            break
+    users_lock.acquire()
+    del users[uid]
+    users_lock.release()
+
+def get_user(uid):
+    users_lock.acquire()
+    if uid not in users:
+        users[uid] = {
+            "CONTENT": {},
+            "EVENT": Event()
+        }
+        Thread(target=release_uid, args=(uid,)).start()
+    else:
+        users[uid]["EVENT"].set()
+    user = users[uid]
+    users_lock.release()
+    return user
+
+def read_json(filepath: str, **args) -> dict:
+    uid = get_uid()
+    if uid is not None:
+        user = get_user(uid)
+        if filepath in user["CONTENT"]:
+            return user["CONTENT"][filepath]
     with open(filepath, **args) as f:
         return json.load(f)
 
 
 def write_json(data: dict, filepath: str) -> None:
-
-    with open(filepath, 'w') as f:
-        json.dump(data, f, sort_keys=False, indent=4)
+    uid = get_uid()
+    if uid is not None:
+        user = get_user(uid)
+        user["CONTENT"][filepath] = data
+    else:
+        with open(filepath, 'w') as f:
+            json.dump(data, f, sort_keys=False, indent=4)
 
 
 def decrypt_battle_data(data: str, login_time: int) -> dict:
