@@ -66,7 +66,7 @@ def read_json(filepath: str, **args) -> dict:
     if uid is not None:
         user = get_user(uid)
         if filepath in user["CONTENT"]:
-            return user["CONTENT"][filepath]
+            return json.loads(user["CONTENT"][filepath])
     with open(filepath, **args) as f:
         return json.load(f)
 
@@ -75,7 +75,7 @@ def write_json(data: dict, filepath: str) -> None:
     uid = get_uid()
     if uid is not None:
         user = get_user(uid)
-        user["CONTENT"][filepath] = data
+        user["CONTENT"][filepath] = json.dumps(data, sort_keys=False)
     else:
         with open(filepath, 'w') as f:
             json.dump(data, f, sort_keys=False, indent=4)
