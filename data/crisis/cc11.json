@@ -2723,8 +2723,8 @@
                 },
                 "season": {
                     "rune_season_11_1": {
-                        "coin": 0,
-                        "tCoin": 4,
+                        "coin": 14,
+                        "tCoin": 28,
                         "permanent": {
                             "nst": -1,
                             "rune": {

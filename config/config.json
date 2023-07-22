@@ -79,7 +79,7 @@
         }
     },
     "crisisConfig": {
-        "selectedCrisis": null
+        "selectedCrisis": "cc12"
     },
     "userConfig": {
         "restorePreviousStates": {
