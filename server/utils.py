@@ -65,7 +65,7 @@ def get_user(uid):
 
 def read_json(filepath: str, **args) -> dict:
     uid = get_uid()
-    if uid is not None:
+    if uid is not None and filepath.find("hot_update_list.json") == -1:
         user = get_user(uid)
         if filepath in user["CONTENT"]:
             return json.loads(user["CONTENT"][filepath])
@@ -75,7 +75,7 @@ def read_json(filepath: str, **args) -> dict:
 
 def write_json(data: dict, filepath: str) -> None:
     uid = get_uid()
-    if uid is not None:
+    if uid is not None and filepath.find("hot_update_list.json") == -1:
         user = get_user(uid)
         user["CONTENT"][filepath] = json.dumps(data, sort_keys=False)
     else:
