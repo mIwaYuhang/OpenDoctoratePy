@@ -27,6 +27,8 @@ def get_uid():
     if multiUserEnabled:
         try:
             uid = request.headers.get("Uid")
+            if uid is None:
+                raise Exception
             return uid
         except Exception:
             return "Anonymous"
