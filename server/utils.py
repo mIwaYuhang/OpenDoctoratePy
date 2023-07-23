@@ -29,7 +29,7 @@ def get_uid():
             uid = request.headers.get("Uid")
             return uid
         except Exception:
-            pass
+            return "Anonymous"
     return None
 
 def release_uid(uid):
